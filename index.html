@@ -332,7 +332,7 @@
 <script src="config.js"></script>
 <script>
 const statusBanner = document.getElementById('status-banner');
-let supabase = null;
+let supabaseClient = null;
 let allSchemes = [];
 
 function showBanner(text){
@@ -347,17 +347,15 @@ function showBanner(text){
 
 async function loadSchemes(){
   try {
-    const { data, error } = await supabase.from('schemes').select('*');
+    const { data, error } = await supabaseClient.from('schemes').select('*');
     if (error) {
       showBanner('⚠ Could not load scheme data: ' + error.message);
-      enableInputs(); // Enable UI even if data load failed
       return;
     }
-    allSchemes = data || [];
+    allSchemes = data;
     enableInputs();
   } catch (e) {
     showBanner('⚠ Could not reach Supabase: ' + e.message + ' (check your SUPABASE_URL in config.js and internet connection)');
-    enableInputs(); // Enable UI on network exception
   }
 }
 
@@ -432,7 +430,7 @@ function sendChat(){
   addMsg(query, 'user');
   input.value = '';
 
-  if (!supabase) {
+  if (!supabaseClient) {
     addMsg("Scheme data isn't connected yet — please configure Supabase (see config.js).", 'bot');
     return;
   }
@@ -502,8 +500,8 @@ try {
     showBanner('⚠ SUPABASE_URL looks wrong — it should look like https://xxxxx.supabase.co (Project Settings → API → Project URL), not an API key.');
     enableInputs();
   } else {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    loadSchemes();
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+loadSchemes();
   }
 } catch (e) {
   showBanner('⚠ Could not initialize Supabase: ' + e.message);
