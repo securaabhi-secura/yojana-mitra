@@ -340,22 +340,19 @@ function showBanner(text){
   statusBanner.style.display = 'block';
 }
 
-// Supabase init runs at the bottom of this script, after all click handlers
-// are attached — see initSupabase() call at the end of this file. This way,
-// even if Supabase fails to initialize (bad URL, network issue, etc.), every
-// button on the page still works.
-
 async function loadSchemes(){
   try {
     const { data, error } = await supabaseClient.from('schemes').select('*');
     if (error) {
       showBanner('⚠ Could not load scheme data: ' + error.message);
+      enableInputs(); // Ensure UI enables even if database returns an error
       return;
     }
-    allSchemes = data;
+    allSchemes = data || [];
     enableInputs();
   } catch (e) {
     showBanner('⚠ Could not reach Supabase: ' + e.message + ' (check your SUPABASE_URL in config.js and internet connection)');
+    enableInputs();
   }
 }
 
@@ -411,7 +408,7 @@ function addMsg(html, sender){
   chatLog.scrollTop = chatLog.scrollHeight;
 }
 
-// ---- Chat / keyword search (client-side, over allSchemes) ----
+// ---- Chat / keyword search ----
 function searchSchemes(query){
   query = query.toLowerCase().trim();
   const words = query.split(/\s+/).filter(w => w.length > 2);
@@ -451,7 +448,7 @@ document.getElementById('chat-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') sendChat();
 });
 
-// ---- Eligibility checker (client-side, over allSchemes) ----
+// ---- Eligibility checker ----
 document.getElementById('e-submit').addEventListener('click', () => {
   const age = parseInt(document.getElementById('e-age').value, 10) || 0;
   const genderVal = document.getElementById('e-gender').value;
@@ -460,7 +457,8 @@ document.getElementById('e-submit').addEventListener('click', () => {
   const occupation = document.getElementById('e-occupation').value;
   const resultsDiv = document.getElementById('eligibility-results');
 
-  if (!supabase) {
+  // FIXED: Changed !supabase to !supabaseClient
+  if (!supabaseClient) {
     resultsDiv.innerHTML = '<div class="msg bot">Scheme data isn\'t connected yet — please configure Supabase (see config.js).</div>';
     return;
   }
@@ -483,11 +481,7 @@ document.getElementById('e-submit').addEventListener('click', () => {
   }
 });
 
-// ---- Supabase init (runs LAST, after every button already has its click
-// handler attached above). Wrapped in try/catch so a bad URL, a missing key,
-// a network problem, or the CDN script failing to load can never again take
-// down the rest of the page's interactivity — worst case, you just see the
-// warning banner and the "not connected yet" fallback replies. ----
+// ---- Supabase init ----
 try {
   if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined'
       || SUPABASE_URL.includes('YOUR_') || SUPABASE_ANON_KEY.includes('YOUR_')) {
@@ -501,7 +495,7 @@ try {
     enableInputs();
   } else {
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-loadSchemes();
+    loadSchemes();
   }
 } catch (e) {
   showBanner('⚠ Could not initialize Supabase: ' + e.message);
