@@ -350,12 +350,14 @@ async function loadSchemes(){
     const { data, error } = await supabase.from('schemes').select('*');
     if (error) {
       showBanner('⚠ Could not load scheme data: ' + error.message);
+      enableInputs(); // Enable UI even if data load failed
       return;
     }
-    allSchemes = data;
+    allSchemes = data || [];
     enableInputs();
   } catch (e) {
     showBanner('⚠ Could not reach Supabase: ' + e.message + ' (check your SUPABASE_URL in config.js and internet connection)');
+    enableInputs(); // Enable UI on network exception
   }
 }
 
