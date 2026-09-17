@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yojana Mitra — Find Your Government Scheme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy: #10213A;
+    --navy-deep: #0A1626;
+    --panel: #16294A;
+    --marigold: #E8A33D;
+    --marigold-soft: #F3C878;
+    --paper: #F1EEE4;
+    --paper-dim: #B9C1CE;
+    --line: rgba(241,238,228,0.12);
+    --good: #7FB88C;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--navy-deep);
+    color: var(--paper);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  header{
+    width:100%;
+    max-width: 760px;
+    padding: 40px 20px 20px;
+    text-align:left;
+  }
+  header .eyebrow{
+    color: var(--marigold);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+  header h1{
+    font-family:'Lora', serif;
+    font-weight: 600;
+    font-size: 34px;
+    margin: 0 0 8px;
+    color: var(--paper);
+  }
+  header p{
+    margin:0;
+    color: var(--paper-dim);
+    font-size: 15px;
+    max-width: 56ch;
+    line-height: 1.5;
+  }
+
+  .app{
+    width:100%;
+    max-width: 760px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    padding: 0 20px 24px;
+  }
+
+  .mode-switch{
+    display:flex;
+    gap: 8px;
+    margin: 18px 0 16px;
+  }
+  .mode-switch button{
+    flex:1;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--paper-dim);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor:pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .mode-switch button.active{
+    background: var(--marigold);
+    color: var(--navy-deep);
+    border-color: var(--marigold);
+    font-weight: 600;
+  }
+
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-height: 420px;
+    overflow:hidden;
+  }
+
+  #chat-log{
+    flex:1;
+    overflow-y:auto;
+    padding: 20px;
+    display:flex;
+    flex-direction:column;
+    gap: 14px;
+  }
+  .msg{
+    max-width: 82%;
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+  .msg.bot{
+    background: var(--navy);
+    align-self:flex-start;
+    border-top-left-radius: 3px;
+  }
+  .msg.user{
+    background: var(--marigold);
+    color: var(--navy-deep);
+    align-self:flex-end;
+    border-top-right-radius: 3px;
+    font-weight: 500;
+  }
+  .scheme-card{
+    background: var(--navy);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--marigold);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 4px;
+  }
+  .scheme-card h3{
+    margin: 0 0 4px;
+    font-family:'Lora', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--paper);
+  }
+  .scheme-card .cat{
+    display:inline-block;
+    font-size: 11.5px;
+    color: var(--marigold-soft);
+    margin-bottom: 8px;
+  }
+  .scheme-card p{
+    margin: 0 0 8px;
+    font-size: 13.5px;
+    color: var(--paper-dim);
+    line-height: 1.5;
+  }
+  .scheme-card .benefit{
+    color: var(--good);
+    font-size: 13.5px;
+    margin-bottom: 10px;
+  }
+  .scheme-card a{
+    color: var(--marigold);
+    font-size: 13.5px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .scheme-card a:hover{ text-decoration: underline; }
+
+  #chat-input-row{
+    display:flex;
+    gap: 8px;
+    padding: 14px;
+    border-top: 1px solid var(--line);
+  }
+  #chat-input-row input{
+    flex:1;
+    background: var(--navy);
+    border: 1px solid var(--line);
+    color: var(--paper);
+    padding: 11px 14px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14.5px;
+  }
+  #chat-input-row input::placeholder{ color: #6D7A8F; }
+  #chat-input-row input:focus{ outline: 2px solid var(--marigold); outline-offset: 1px; }
+  #chat-input-row button{
+    background: var(--marigold);
+    color: var(--navy-deep);
+    border:none;
+    padding: 0 20px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor:pointer;
+  }
+  #chat-input-row button:hover{ background: var(--marigold-soft); }
+  #chat-input-row button:disabled{ opacity: 0.5; cursor: not-allowed; }
+
+  #eligibility-form{
+    padding: 22px;
+    display:none;
+    flex-direction:column;
+    gap: 14px;
+    overflow-y:auto;
+  }
+  #eligibility-form.active{ display:flex; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field label{ font-size: 13px; color: var(--paper-dim); }
+  .field input, .field select{
+    background: var(--navy);
+    border: 1px solid var(--line);
+    color: var(--paper);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14.5px;
+  }
+  .field input:focus, .field select:focus{ outline: 2px solid var(--marigold); outline-offset: 1px; }
+  .form-row{ display:flex; gap: 12px; }
+  .form-row .field{ flex:1; }
+  #eligibility-form button{
+    background: var(--marigold);
+    color: var(--navy-deep);
+    border:none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor:pointer;
+    margin-top: 4px;
+  }
+  #eligibility-results{
+    display:flex;
+    flex-direction:column;
+    gap: 12px;
+    margin-top: 6px;
+  }
+
+  #status-banner{
+    display:none;
+    background: #4A2A2A;
+    border: 1px solid #7A3E3E;
+    color: #F1C3C3;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    margin: 0 20px 16px;
+  }
+
+  footer{
+    color: #5A6577;
+    font-size: 12.5px;
+    padding: 6px 20px 28px;
+    text-align: center;
+  }
+
+  @media (max-width: 600px){
+    header h1{ font-size: 27px; }
+    .msg{ max-width: 90%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Yojana Mitra · योजना मित्र</div>
+  <h1>Find schemes you're eligible for</h1>
+  <p>Ask in plain words, or answer a few quick questions — Yojana Mitra matches you to government welfare schemes you may qualify for.</p>
+</header>
+
+<div id="status-banner"></div>
+
+<div class="app">
+  <div class="mode-switch">
+    <button id="btn-chat" class="active">Ask a question</button>
+    <button id="btn-eligibility">Check eligibility</button>
+  </div>
+
+  <div class="panel">
+    <div id="chat-log">
+      <div class="msg bot">Namaste! Ask me about schemes for farmers, students, health, housing, or work — for example, "schemes for farmers" or "help for students".</div>
+    </div>
+    <div id="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Loading schemes…" autocomplete="off" disabled>
+      <button id="chat-send" disabled>Send</button>
+    </div>
+
+    <div id="eligibility-form">
+      <div class="form-row">
+        <div class="field">
+          <label for="e-age">Age</label>
+          <input type="number" id="e-age" placeholder="e.g. 32" min="0" max="100">
+        </div>
+        <div class="field">
+          <label for="e-gender">Gender</label>
+          <select id="e-gender">
+            <option value="any">Any</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="e-income">Annual family income (₹, optional)</label>
+        <input type="number" id="e-income" placeholder="e.g. 200000" min="0">
+      </div>
+      <div class="field">
+        <label for="e-occupation">Occupation</label>
+        <select id="e-occupation">
+          <option value="any">Any / Other</option>
+          <option value="farmer">Farmer</option>
+          <option value="student">Student</option>
+          <option value="unemployed">Unemployed</option>
+          <option value="self-employed">Self-employed</option>
+          <option value="unorganized worker">Unorganized sector worker</option>
+        </select>
+      </div>
+      <button id="e-submit" disabled>Loading schemes…</button>
+      <div id="eligibility-results"></div>
+    </div>
+  </div>
+</div>
+
+<footer>Prototype for the Tata Young Social Innovator Challenge — scheme data is illustrative and should be verified on official portals before applying.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+const statusBanner = document.getElementById('status-banner');
+let supabase = null;
+let allSchemes = [];
+
+function showBanner(text){
+  statusBanner.textContent = text;
+  statusBanner.style.display = 'block';
+}
+
+// Supabase init runs at the bottom of this script, after all click handlers
+// are attached — see initSupabase() call at the end of this file. This way,
+// even if Supabase fails to initialize (bad URL, network issue, etc.), every
+// button on the page still works.
+
+async function loadSchemes(){
+  try {
+    const { data, error } = await supabase.from('schemes').select('*');
+    if (error) {
+      showBanner('⚠ Could not load scheme data: ' + error.message);
+      return;
+    }
+    allSchemes = data;
+    enableInputs();
+  } catch (e) {
+    showBanner('⚠ Could not reach Supabase: ' + e.message + ' (check your SUPABASE_URL in config.js and internet connection)');
+  }
+}
+
+function enableInputs(){
+  const chatInput = document.getElementById('chat-input');
+  const chatSend = document.getElementById('chat-send');
+  const eSubmit = document.getElementById('e-submit');
+  chatInput.disabled = false;
+  chatInput.placeholder = 'Type your question…';
+  chatSend.disabled = false;
+  eSubmit.disabled = false;
+  eSubmit.textContent = 'Check my eligibility';
+}
+
+// ---- Mode switching ----
+const btnChat = document.getElementById('btn-chat');
+const btnElig = document.getElementById('btn-eligibility');
+const chatLog = document.getElementById('chat-log');
+const chatInputRow = document.getElementById('chat-input-row');
+const eligForm = document.getElementById('eligibility-form');
+
+btnChat.addEventListener('click', () => {
+  btnChat.classList.add('active');
+  btnElig.classList.remove('active');
+  chatLog.style.display = 'flex';
+  chatInputRow.style.display = 'flex';
+  eligForm.classList.remove('active');
+});
+btnElig.addEventListener('click', () => {
+  btnElig.classList.add('active');
+  btnChat.classList.remove('active');
+  chatLog.style.display = 'none';
+  chatInputRow.style.display = 'none';
+  eligForm.classList.add('active');
+});
+
+// ---- Rendering helpers ----
+function schemeCardHTML(s){
+  return `<div class="scheme-card">
+    <span class="cat">${s.category}</span>
+    <h3>${s.name}</h3>
+    <p>${s.description}</p>
+    <div class="benefit">✓ ${s.benefits}</div>
+    <a href="${s.apply_link}" target="_blank" rel="noopener">Apply / Learn more →</a>
+  </div>`;
+}
+
+function addMsg(html, sender){
+  const div = document.createElement('div');
+  div.className = 'msg ' + sender;
+  div.innerHTML = html;
+  chatLog.appendChild(div);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+// ---- Chat / keyword search (client-side, over allSchemes) ----
+function searchSchemes(query){
+  query = query.toLowerCase().trim();
+  const words = query.split(/\s+/).filter(w => w.length > 2);
+  const matches = [];
+  for (const s of allSchemes) {
+    const haystack = `${s.name} ${s.category} ${s.keywords} ${s.description}`.toLowerCase();
+    if (words.some(w => haystack.includes(w))) matches.push(s);
+  }
+  return matches;
+}
+
+function sendChat(){
+  const input = document.getElementById('chat-input');
+  const query = input.value.trim();
+  if (!query) return;
+  addMsg(query, 'user');
+  input.value = '';
+
+  if (!supabase) {
+    addMsg("Scheme data isn't connected yet — please configure Supabase (see config.js).", 'bot');
+    return;
+  }
+
+  const matches = searchSchemes(query);
+  if (matches.length === 0) {
+    addMsg("I couldn't find a matching scheme. Try keywords like: farmer, student, health, housing, job, pension, or women.", 'bot');
+  } else {
+    let html = "Here's what I found for you:" +
+      '<div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">' +
+      matches.map(schemeCardHTML).join('') + '</div>';
+    addMsg(html, 'bot');
+  }
+}
+
+document.getElementById('chat-send').addEventListener('click', sendChat);
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendChat();
+});
+
+// ---- Eligibility checker (client-side, over allSchemes) ----
+document.getElementById('e-submit').addEventListener('click', () => {
+  const age = parseInt(document.getElementById('e-age').value, 10) || 0;
+  const genderVal = document.getElementById('e-gender').value;
+  const incomeRaw = document.getElementById('e-income').value;
+  const income = incomeRaw !== '' ? parseInt(incomeRaw, 10) : null;
+  const occupation = document.getElementById('e-occupation').value;
+  const resultsDiv = document.getElementById('eligibility-results');
+
+  if (!supabase) {
+    resultsDiv.innerHTML = '<div class="msg bot">Scheme data isn\'t connected yet — please configure Supabase (see config.js).</div>';
+    return;
+  }
+
+  const matches = allSchemes.filter(s => {
+    if (age < s.eligibility_min_age || age > s.eligibility_max_age) return false;
+    if (s.eligibility_income_max !== null && income !== null && income > s.eligibility_income_max) return false;
+    const schemeOcc = (s.eligibility_occupation || 'any').toLowerCase();
+    if (schemeOcc !== 'any' && occupation !== 'any' && schemeOcc !== occupation) return false;
+    const schemeGender = (s.eligibility_gender || 'any').toLowerCase();
+    if (schemeGender !== 'any' && genderVal !== 'any' && schemeGender !== genderVal) return false;
+    return true;
+  });
+
+  if (matches.length === 0) {
+    resultsDiv.innerHTML = '<div class="msg bot">No exact matches found based on what you entered. Try adjusting the details, or browse schemes by category.</div>';
+  } else {
+    resultsDiv.innerHTML = `<div class="msg bot">Based on your details, you may be eligible for ${matches.length} scheme(s):</div>` +
+      matches.map(schemeCardHTML).join('');
+  }
+});
+
+// ---- Supabase init (runs LAST, after every button already has its click
+// handler attached above). Wrapped in try/catch so a bad URL, a missing key,
+// a network problem, or the CDN script failing to load can never again take
+// down the rest of the page's interactivity — worst case, you just see the
+// warning banner and the "not connected yet" fallback replies. ----
+try {
+  if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined'
+      || SUPABASE_URL.includes('YOUR_') || SUPABASE_ANON_KEY.includes('YOUR_')) {
+    showBanner('⚠ Supabase not configured yet — copy config.example.js to config.js and add your project URL + anon key.');
+    enableInputs();
+  } else if (typeof window.supabase === 'undefined') {
+    showBanner('⚠ Supabase library failed to load (check your internet connection or ad-blocker).');
+    enableInputs();
+  } else if (!/^https:\/\/.+\.supabase\.co\/?$/.test(SUPABASE_URL.trim())) {
+    showBanner('⚠ SUPABASE_URL looks wrong — it should look like https://xxxxx.supabase.co (Project Settings → API → Project URL), not an API key.');
+    enableInputs();
+  } else {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    loadSchemes();
+  }
+} catch (e) {
+  showBanner('⚠ Could not initialize Supabase: ' + e.message);
+  enableInputs();
+}
+</script>
+
+</body>
+</html>
